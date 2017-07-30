@@ -67,16 +67,8 @@ exe "Running initialize-vm playbook on vm-ubuntu" \
 exe "Running initialize-vm playbook on CnC" \
      bash -c 'ansible-playbook -v -i inventories/hosts.devops-CnC playbooks/initialize-vms.yml 1>/home/vagrant/.log/ansible-vm.cnc 2>&1'
 
-#cd /home/vagrant/playbooks/ansible-init
-#exe "Running ansible-init playbook on vm" \
-#     bash -c 'ansible-playbook -v -i hosts site.foo.yml 1>/home/vagrant/.log/ansible-init.vm 2>&1'
-#
-#exe "Running ansible-init playbook on CnC" \
-#     bash -c 'ansible-playbook -v -i hosts.local site.foo.yml 1>/home/vagrant/.log/ansible-init.cnc 2>&1'
-#
-#cd /home/vagrant/playbooks/ansible
-#exe "Running ansible site playbook on CnC" \
-#     bash -c 'ansible-playbook -v -i hosts.CnC playbook.site.yml 1>/home/vagrant/.log/ansible.cnc 2>&1'
+exe "Running ansible setup playbook on CnC" \
+     bash -c 'ansible-playbook -v -i inventories/hosts.devops-CnC playbooks/setup-cnc.yml 1>/home/vagrant/.log/ansible.cnc 2>&1'
 
 chown -R vagrant:vagrant /opt/ansible/
 chown -R vagrant:vagrant /home/vagrant/.log
