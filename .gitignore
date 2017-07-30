@@ -4,5 +4,6 @@
 
 /*.box
 /.ssh-config
+/.ssh-config.*
 /.vagrant
 /shared
