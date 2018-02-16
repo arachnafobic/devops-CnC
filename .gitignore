@@ -1,6 +1,7 @@
 *~
 *.swp
 *.retry
+ubuntu-*-cloudimg-console.log
 
 /*.box
 /.ssh-config

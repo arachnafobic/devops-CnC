@@ -30,6 +30,10 @@ exe "Setting up swapfile" \
             sh -c "echo /swap swap swap defaults 0 0 >> /etc/fstab" && \
             sh -c "echo vm.swappiness = 0 >> /etc/sysctl.conf && sysctl -p"'
 
+exe "Adding aptitude for 12.04/14.04" \
+     sh -c 'apt-get update && \
+            apt-get -y install aptitude'
+
 exe "Updating system" \
      sh -c 'export DEBIAN_FRONTEND=noninteractive && \
             aptitude update && \
