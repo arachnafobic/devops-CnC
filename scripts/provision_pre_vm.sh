@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+DISTRO=`lsb_release -cs`
+
 exe () {
     # MESSAGE_PREFIX="\b\b\b\b\b\b\b\b\b\b"
     MESSAGE_PREFIX=""
@@ -30,16 +32,31 @@ exe "Setting up swapfile" \
             sh -c "echo /swap swap swap defaults 0 0 >> /etc/fstab" && \
             sh -c "echo vm.swappiness = 0 >> /etc/sysctl.conf && sysctl -p"'
 
-exe "Adding aptitude for 12.04/14.04" \
-     sh -c 'apt-get update && \
-            apt-get -y install aptitude'
+# We use aptitude in precise (12.04) and trusty (14.04)
+# The apt toolset in xenial (16.04) is superior though
+if [ $DISTRO == "precise" ] || [ $DISTRO == "trusty" ]
+then
+  exe "Adding aptitude for 12.04/14.04" \
+       sh -c 'apt-get update && \
+              apt-get -y install aptitude'
 
-exe "Updating system" \
-     sh -c 'export DEBIAN_FRONTEND=noninteractive && \
-            aptitude update && \
-            aptitude -y install git python-jinja2 python-setuptools whois && \
-            aptitude -y safe-upgrade && \
-            aptitude -y autoclean'
+  exe "Updating system" \
+       sh -c 'export DEBIAN_FRONTEND=noninteractive && \
+              aptitude update && \
+              aptitude -y install squid-deb-proxy-client && \
+              aptitude -y install git python-jinja2 python-setuptools whois && \
+              aptitude -y safe-upgrade && \
+              aptitude -y autoclean'
+else
+  exe "Updating system" \
+       sh -c 'export DEBIAN_FRONTEND=noninteractive && \
+              apt update && \
+              apt -y install squid-deb-proxy-client && \
+              apt -y install git python-jinja2 python-setuptools python-yaml whois && \
+              apt -y upgrade && \
+              apt -y autoremove && \
+              apt -y autoclean'
+fi
 
 if [[ $1 == "CnC" ]]
 then
