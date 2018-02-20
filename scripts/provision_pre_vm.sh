@@ -63,7 +63,7 @@ then
   exe "Preparing ansible 2.3.x" \
        sh -c 'mkdir -p /opt && \
               cd /opt && \
-              git clone --recursive -b v2.3.1.0-1 https://github.com/ansible/ansible.git ansible-2.3.x && \
+              git clone --recursive -b v2.3.3.0-1 https://github.com/ansible/ansible.git ansible-2.3.x && \
               ln -s ansible-2.3.x ansible && \
               chown -R vagrant.vagrant /opt/ansible/ && \
               chown -R vagrant.vagrant /opt/ansible-2.3.x/ && \
