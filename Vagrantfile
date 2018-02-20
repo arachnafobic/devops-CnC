@@ -39,7 +39,7 @@ boxes = [
   },
   {
     name:       'CnC',
-    release:    'trusty',
+    release:    'xenial',
     host:       'CnC.example.com',
     sshport:    '2020',
     memory:     '512',
