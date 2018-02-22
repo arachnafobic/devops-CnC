@@ -53,19 +53,18 @@ else
               apt update && \
               apt -y install squid-deb-proxy-client && \
               apt -y install git python-jinja2 python-setuptools python-yaml whois && \
-              apt -y upgrade && \
-              apt -y autoremove && \
+              apt -y --with-new-pkgs --autoremove upgrade && \
               apt -y autoclean'
 fi
 
 if [[ $1 == "CnC" ]]
 then
-  exe "Preparing ansible 2.3.x" \
+  exe "Preparing ansible 2.4.x" \
        sh -c 'mkdir -p /opt && \
               cd /opt && \
-              git clone --recursive -b v2.3.3.0-1 https://github.com/ansible/ansible.git ansible-2.3.x && \
-              ln -s ansible-2.3.x ansible && \
+              git clone --recursive -b v2.4.3.0-1 https://github.com/ansible/ansible.git ansible-2.4.x && \
+              ln -s ansible-2.4.x ansible && \
               chown -R vagrant.vagrant /opt/ansible/ && \
-              chown -R vagrant.vagrant /opt/ansible-2.3.x/ && \
+              chown -R vagrant.vagrant /opt/ansible-2.4.x/ && \
               echo "source /opt/ansible/hacking/env-setup 1>/dev/null 2>&1" >> /home/vagrant/.profile'
 fi

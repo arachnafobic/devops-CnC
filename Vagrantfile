@@ -34,7 +34,7 @@ boxes = [
     release:    'xenial',
     host:       'vm-ubuntu.example.com',
     sshport:    '2120',
-    memory:     '512',
+    memory:     '1024',
     sshagent:   false,
   },
   {
