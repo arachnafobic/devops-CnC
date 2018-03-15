@@ -30,6 +30,7 @@ exe () {
 
 if [[ $1 == "CnC" ]]
 then
+  # This should be a dynamic loop using find, eventually
   [ ! -e .vagrant/machines/vm-ubuntu/virtualbox/private_key ] ||  cp .vagrant/machines/vm-ubuntu/virtualbox/private_key shared/vm-ubuntu.id_rsa
   [ ! -e .vagrant/machines/vm-clinux/virtualbox/private_key ] ||  cp .vagrant/machines/vm-clinux/virtualbox/private_key shared/vm-clinux.id_rsa
 fi

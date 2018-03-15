@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-DISTRO=`lsb_release -cs`
-
 exe () {
     # MESSAGE_PREFIX="\b\b\b\b\b\b\b\b\b\b"
     MESSAGE_PREFIX=""
@@ -26,6 +24,10 @@ exe () {
     return $status
 }
 
+# Detect distro and version used.
+DISTRO=`cat /etc/os-release | grep ^NAME= | awk -F'=' '{print $2}' | awk -F '"' '{print $2}'`
+VERSION=`cat /etc/os-release | grep ^VERSION_ID= | awk -F'=' '{print $2}' | awk -F '"' '{print $2}'`
+
 exe "Setting up swapfile" \
      sh -c 'dd if=/dev/zero of=/swap bs=1024 count=2097152 && \
             mkswap /swap && chown root. /swap && chmod 0600 /swap && swapon /swap && \
@@ -34,7 +36,7 @@ exe "Setting up swapfile" \
 
 # We use aptitude in precise (12.04) and trusty (14.04)
 # The apt toolset in xenial (16.04) is superior though
-if [ $DISTRO == "precise" ] || [ $DISTRO == "trusty" ]
+if [ $DISTRO == "Ubuntu" ] && ( [ $VERSION == "12.04" ] || [ $VERSION == "14.04" ])
 then
   exe "Adding aptitude for 12.04/14.04" \
        sh -c 'apt-get update && \
@@ -47,7 +49,8 @@ then
               aptitude -y install git python-jinja2 python-setuptools whois && \
               aptitude -y safe-upgrade && \
               aptitude -y autoclean'
-else
+elif [ $DISTRO == "Ubuntu" ] && ( [ $VERSION != "12.04" ] && [ $VERSION != "14.04" ])
+then
   exe "Updating system" \
        sh -c 'export DEBIAN_FRONTEND=noninteractive && \
               apt update && \
@@ -55,6 +58,18 @@ else
               apt -y install git python-jinja2 python-setuptools python-yaml whois && \
               apt -y --with-new-pkgs --autoremove upgrade && \
               apt -y autoclean'
+elif [ $DISTRO == "CloudLinux" ]
+then
+  # Placeholder spot
+  # update only works with valid license allready in place
+  # exe "Updating system" \
+  #      sh -c 'yum -q -y update'
+
+  # vagrant/box specific workaround
+  exe "Fixing ifcfg-eth0" \
+       sh -c 'cp -f /home/vagrant/shared/clinux-ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0'
+else
+  echo "Unknown distro/version combo detected, skipping auto update"
 fi
 
 if [[ $1 == "CnC" ]]

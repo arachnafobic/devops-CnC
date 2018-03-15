@@ -35,6 +35,8 @@ exe "Fetching Keyprints for known hosts" \
      sh -c '/usr/bin/ssh-keyscan -t rsa localhost               >  /root/.ssh/known_hosts && \
             /usr/bin/ssh-keyscan -t rsa vm-clinux               >> /root/.ssh/known_hosts && \
             /usr/bin/ssh-keyscan -t rsa vm-clinux.example.com   >> /root/.ssh/known_hosts && \
+            /usr/bin/ssh-keyscan -t rsa vm-ubuntu               >> /root/.ssh/known_hosts && \
+            /usr/bin/ssh-keyscan -t rsa vm-ubuntu.example.com   >> /root/.ssh/known_hosts && \
             mkdir -p /home/vagrant/.ssh && \
             chmod 700 /home/vagrant/.ssh && \
             cp /root/.ssh/known_hosts /home/vagrant/.ssh/known_hosts && \

@@ -26,6 +26,7 @@ base_cfg = {
   gui:        false,
   sshagent:   true,
   defaultvm:  false,
+  autostart:  true,
 }
 
 # ALWAYS place CnC LAST so it can execute playbooks against the other vm(s) during "vagrant up" creation.
@@ -39,14 +40,15 @@ boxes = [
     memory:     '2048',
     sshagent:   false,
   },
-#  {
-#    name:       'vm-ubuntu',
-#    release:    'xenial',
-#    host:       'vm-ubuntu.example.com',
-#    sshport:    '2120',
-#    memory:     '2048',
-#    sshagent:   false,
-#  },
+  {
+    name:       'vm-ubuntu',
+    release:    'xenial',
+    host:       'vm-ubuntu.example.com',
+    sshport:    '2120',
+    memory:     '2048',
+    sshagent:   false,
+    autostart:  false,
+  },
   {
     name:       'CnC',
     release:    'xenial',
@@ -66,14 +68,14 @@ Vagrant::Config.run('2') do |config|
     # We'll handle it during provisioning
     config.vbguest.auto_update = false
 
-    # Enable HostManager Plugin
-    config.hostmanager.enabled = true
+    # Configure, but DISable HostManager Plugin, we'll run it as provisioner
+    config.hostmanager.enabled = false
     config.hostmanager.manage_host = false
     config.hostmanager.manage_guest = true
     config.hostmanager.ignore_private_ip = true
     config.hostmanager.include_offline = false
 
-    config.vm.define name, primary: cfg[:defaultvm] do |config|
+    config.vm.define name, primary: cfg[:defaultvm], autostart: cfg[:autostart] do |config|
 
       # Set Box
       if cfg[:os] == 'cloudlinux'
@@ -91,26 +93,6 @@ Vagrant::Config.run('2') do |config|
         config.vm.box_check_update = true
         config.vm.hostname = cfg[:host]
       end
-
-      # Update /etc/hosts inside VMs
-      cached_addresses = {}
-      config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
-        if cached_addresses[vm.name].nil?
-          if hostname = (vm.ssh_info && vm.ssh_info[:host])
-            if cfg[:os] == 'cloudlinux'
-              vm.communicate.execute("/sbin/ifconfig | grep 'inet' | head -n 1 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
-                cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
-              end
-            else
-              vm.communicate.execute("/sbin/ifconfig | grep 'inet addr' | head -n 2 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
-                cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
-              end
-            end
-          end
-        end
-        cached_addresses[vm.name]
-      end
-      config.hostmanager.aliases = cfg[:name]
 
       # SSH Options
       config.ssh.forward_x11 = cfg[:fwd_x]
@@ -150,33 +132,44 @@ Vagrant::Config.run('2') do |config|
         config.vm.synced_folder k, v, create: true
       end
 
-      # Provisions, pre reboot, ON THE HOST
-      if cfg[:os] == 'ubuntu'
-        config.vm.provision "trigger", :stdout => true do |trigger|
-          trigger.fire do
-            run "scripts/provision_pre_host.sh #{cfg[:name]}"
-            run_remote "scripts/provision_pre_vm.sh #{cfg[:name]}"
+      # Update /etc/hosts inside VMs
+      cached_addresses = {}
+      config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
+        if cached_addresses[vm.name].nil?
+          if hostname = (vm.ssh_info && vm.ssh_info[:host])
+            if cfg[:os] == 'cloudlinux'
+              vm.communicate.execute("/sbin/ifconfig | grep 'inet' | head -n 1 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
+                cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
+              end
+            else
+              vm.communicate.execute("/sbin/ifconfig | grep 'inet addr' | head -n 2 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
+                cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
+              end
+            end
           end
+        end
+        cached_addresses[vm.name]
+      end
+      config.hostmanager.aliases = cfg[:name]
+
+      # Provisions, pre reboot
+      config.vm.provision "trigger", :stdout => true do |trigger|
+        trigger.fire do
+          run "scripts/provision_pre_host.sh #{cfg[:name]}"
+          run_remote "scripts/provision_pre_vm.sh #{cfg[:name]}"
         end
       end
 
       # Auto Reboot after Provisions only, first run usually.
       config.vm.provision :reload
 
-      # Provisions, post reboot, ON THE HOST
-      if cfg[:os] == 'cloudlinux'
-        config.vm.provision "trigger", :stdout => true do |trigger|
-          trigger.fire do
-            run "scripts/provision_vbguest.sh #{cfg[:name]}"
-          end
-        end
-      else
-        config.vm.provision "trigger", :stdout => true do |trigger|
-          trigger.fire do
-            run "scripts/provision_post_host.sh #{cfg[:name]}"
-            run_remote "scripts/provision_post_vm.sh #{cfg[:name]}"
-            run "scripts/provision_vbguest.sh #{cfg[:name]}"
-          end
+      config.vm.provision :hostmanager
+
+      config.vm.provision "trigger", :stdout => true do |trigger|
+        trigger.fire do
+          run "scripts/provision_post_host.sh #{cfg[:name]}"
+          run_remote "scripts/provision_post_vm.sh #{cfg[:name]}"
+          run "scripts/provision_vbguest.sh #{cfg[:name]}"
         end
       end
 
