@@ -33,8 +33,8 @@ then
 
 exe "Fetching Keyprints for known hosts" \
      sh -c '/usr/bin/ssh-keyscan -t rsa localhost               >  /root/.ssh/known_hosts && \
-            /usr/bin/ssh-keyscan -t rsa vm-ubuntu               >> /root/.ssh/known_hosts && \
-            /usr/bin/ssh-keyscan -t rsa vm-ubuntu.example.com   >> /root/.ssh/known_hosts && \
+            /usr/bin/ssh-keyscan -t rsa vm-clinux               >> /root/.ssh/known_hosts && \
+            /usr/bin/ssh-keyscan -t rsa vm-clinux.example.com   >> /root/.ssh/known_hosts && \
             mkdir -p /home/vagrant/.ssh && \
             chmod 700 /home/vagrant/.ssh && \
             cp /root/.ssh/known_hosts /home/vagrant/.ssh/known_hosts && \
@@ -45,10 +45,10 @@ exe "Cloning devops-CnC-ansible into ~/ansible/" \
             git clone https://github.com/arachnafobic/devops-CnC-ansible.git ansible && \
             chown -R vagrant:vagrant ansible/'
 
-exe "Setting Keybased SSH for vm-ubuntu" \
-     sh -c 'mv shared/vm-ubuntu.id_rsa /home/vagrant/.ssh/vm-ubuntu.id_rsa && \
-            chmod 600 /home/vagrant/.ssh/vm-ubuntu.id_rsa && \
-            chown vagrant:vagrant /home/vagrant/.ssh/vm-ubuntu.id_rsa'
+exe "Setting Keybased SSH for vm-clinux" \
+     sh -c 'mv shared/vm-clinux.id_rsa /home/vagrant/.ssh/vm-clinux.id_rsa && \
+            chmod 600 /home/vagrant/.ssh/vm-clinux.id_rsa && \
+            chown vagrant:vagrant /home/vagrant/.ssh/vm-clinux.id_rsa'
 
 exe "Setting up git config" \
      sudo -H -u vagrant sh -c 'mkdir -p ~/.git/ && \
@@ -61,8 +61,8 @@ source /opt/ansible/hacking/env-setup 1>/dev/null 2>&1
 mkdir -p /home/vagrant/.log
 
 cd /home/vagrant/ansible
-exe "Running initialize-vm playbook on vm-ubuntu" \
-     bash -c 'ansible-playbook -v -i inventories/hosts.vm playbooks/initialize-vms.yml 1>/home/vagrant/.log/ansible-vm.vm 2>&1'
+# exe "Running initialize-vm playbook on vm-ubuntu" \
+#      bash -c 'ansible-playbook -v -i inventories/hosts.vm playbooks/initialize-vms.yml 1>/home/vagrant/.log/ansible-vm.vm 2>&1'
 
 exe "Running initialize-vm playbook on CnC" \
      bash -c 'ansible-playbook -v -i inventories/hosts.devops-CnC playbooks/initialize-vms.yml 1>/home/vagrant/.log/ansible-vm.cnc 2>&1'

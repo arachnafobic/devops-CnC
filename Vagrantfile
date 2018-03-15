@@ -9,6 +9,7 @@ end
 
 base_cfg = {
   name:       'vm-ubuntu',
+  os:         'ubuntu',
   release:    'xenial',
   host:       'vm-ubuntu.example.com',
   ip:         'dhcp',
@@ -30,13 +31,22 @@ base_cfg = {
 # ALWAYS place CnC LAST so it can execute playbooks against the other vm(s) during "vagrant up" creation.
 boxes = [
   {
-    name:       'vm-ubuntu',
-    release:    'xenial',
-    host:       'vm-ubuntu.example.com',
-    sshport:    '2120',
-    memory:     '1024',
+    name:       'vm-clinux',
+    os:         'cloudlinux',
+    release:    'cloudlinux/cloudlinux-7-x86_64',
+    host:       'vm-clinux.example.com',
+    sshport:    '2220',
+    memory:     '2048',
     sshagent:   false,
   },
+#  {
+#    name:       'vm-ubuntu',
+#    release:    'xenial',
+#    host:       'vm-ubuntu.example.com',
+#    sshport:    '2120',
+#    memory:     '2048',
+#    sshagent:   false,
+#  },
   {
     name:       'CnC',
     release:    'xenial',
@@ -66,20 +76,35 @@ Vagrant::Config.run('2') do |config|
     config.vm.define name, primary: cfg[:defaultvm] do |config|
 
       # Set Box
-      boxname = "#{cfg[:release]}64-cloud"
-      config.vm.box = boxname
-      config.vm.box_url = ["https://cloud-images.ubuntu.com/vagrant/#{cfg[:release]}/current/#{cfg[:release]}-server-cloudimg-amd64-vagrant-disk1.box",
-                           "https://cloud-images.ubuntu.com/#{cfg[:release]}/current/#{cfg[:release]}-server-cloudimg-amd64-vagrant.box"]
-      config.vm.box_check_update = true
-      config.vm.hostname = cfg[:host]
+      if cfg[:os] == 'cloudlinux'
+        boxname = "#{cfg[:release]}"
+        config.vm.box = boxname
+        config.vm.box_check_update = true
+        # config.vm.hostname = cfg[:host]
+        config.vm.base_mac = ''
+      else
+        # ubuntu = default
+        boxname = "#{cfg[:release]}64-cloud"
+        config.vm.box = boxname
+        config.vm.box_url = ["https://cloud-images.ubuntu.com/vagrant/#{cfg[:release]}/current/#{cfg[:release]}-server-cloudimg-amd64-vagrant-disk1.box",
+                             "https://cloud-images.ubuntu.com/#{cfg[:release]}/current/#{cfg[:release]}-server-cloudimg-amd64-vagrant.box"]
+        config.vm.box_check_update = true
+        config.vm.hostname = cfg[:host]
+      end
 
       # Update /etc/hosts inside VMs
       cached_addresses = {}
       config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
         if cached_addresses[vm.name].nil?
           if hostname = (vm.ssh_info && vm.ssh_info[:host])
-            vm.communicate.execute("/sbin/ifconfig | grep 'inet addr' | head -n 2 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
-              cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
+            if cfg[:os] == 'cloudlinux'
+              vm.communicate.execute("/sbin/ifconfig | grep 'inet' | head -n 1 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
+                cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
+              end
+            else
+              vm.communicate.execute("/sbin/ifconfig | grep 'inet addr' | head -n 2 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
+                cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
+              end
             end
           end
         end
@@ -97,8 +122,10 @@ Vagrant::Config.run('2') do |config|
         vb.customize ["modifyvm", :id, "--memory", cfg[:memory]] if cfg[:memory]
         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
         vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
-        vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
-        vb.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/home_vagrant_shared", "1"]
+        vb.customize ["modifyvm", :id, "--nictype1", "virtio"]        
+        if cfg[:os] == 'ubuntu'
+          vb.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/home_vagrant_shared", "1"]
+        end
       end
 
       # Set Network
@@ -124,10 +151,12 @@ Vagrant::Config.run('2') do |config|
       end
 
       # Provisions, pre reboot, ON THE HOST
-      config.vm.provision "trigger", :stdout => true do |trigger|
-        trigger.fire do
-          run "scripts/provision_pre_host.sh #{cfg[:name]}"
-          run_remote "scripts/provision_pre_vm.sh #{cfg[:name]}"
+      if cfg[:os] == 'ubuntu'
+        config.vm.provision "trigger", :stdout => true do |trigger|
+          trigger.fire do
+            run "scripts/provision_pre_host.sh #{cfg[:name]}"
+            run_remote "scripts/provision_pre_vm.sh #{cfg[:name]}"
+          end
         end
       end
 
@@ -135,11 +164,19 @@ Vagrant::Config.run('2') do |config|
       config.vm.provision :reload
 
       # Provisions, post reboot, ON THE HOST
-      config.vm.provision "trigger", :stdout => true do |trigger|
-        trigger.fire do
-          run "scripts/provision_post_host.sh #{cfg[:name]}"
-          run_remote "scripts/provision_post_vm.sh #{cfg[:name]}"
-          run "scripts/provision_vbguest.sh #{cfg[:name]}"
+      if cfg[:os] == 'cloudlinux'
+        config.vm.provision "trigger", :stdout => true do |trigger|
+          trigger.fire do
+            run "scripts/provision_vbguest.sh #{cfg[:name]}"
+          end
+        end
+      else
+        config.vm.provision "trigger", :stdout => true do |trigger|
+          trigger.fire do
+            run "scripts/provision_post_host.sh #{cfg[:name]}"
+            run_remote "scripts/provision_post_vm.sh #{cfg[:name]}"
+            run "scripts/provision_vbguest.sh #{cfg[:name]}"
+          end
         end
       end
 
