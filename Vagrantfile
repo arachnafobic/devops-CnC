@@ -163,7 +163,7 @@ Vagrant::Config.run('2') do |config|
       # Auto Reboot after Provisions only, first run usually.
       config.vm.provision :reload
 
-      config.vm.provision :hostmanager
+      config.vm.provision :hostmanager, run: "always"
 
       config.vm.provision "trigger", :stdout => true do |trigger|
         trigger.fire do

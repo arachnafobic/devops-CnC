@@ -30,7 +30,15 @@ exe () {
 
 if [[ $1 == "CnC" ]]
 then
-  # This should be a dynamic loop using find, eventually
-  [ ! -e .vagrant/machines/vm-ubuntu/virtualbox/private_key ] ||  cp .vagrant/machines/vm-ubuntu/virtualbox/private_key shared/vm-ubuntu.id_rsa
-  [ ! -e .vagrant/machines/vm-clinux/virtualbox/private_key ] ||  cp .vagrant/machines/vm-clinux/virtualbox/private_key shared/vm-clinux.id_rsa
+  find .vagrant/machines/ -name private_key |while read fname; do
+    KEY=$fname
+    MACHINE=${fname%/*}
+    MACHINE=${MACHINE%/*}
+    MACHINE=${MACHINE#.vagrant/machines/}
+
+    if [[ $MACHINE != "CnC" ]]
+    then
+      [ ! -e $KEY ] || cp $KEY shared/$MACHINE.id_rsa
+    fi
+  done
 fi

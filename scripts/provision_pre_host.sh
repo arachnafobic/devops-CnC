@@ -27,8 +27,10 @@ exe () {
 exe "fetching ssh-config" \
      sh -c "vagrant ssh-config $1 > .ssh-config.$1"
 
-exe "placing a few premade configs into shared" \
-     sh -c "cp -f files/clinux-ifcfg-eth0 shared/clinux-ifcfg-eth0"
+if [ ! -e shared/clinux-ifcfg-eth0 ]; then
+  exe "placing a few premade configs into shared" \
+       sh -c "cp -f files/clinux-ifcfg-eth0 shared/clinux-ifcfg-eth0"
+fi
 
 if [[ $1 == "CnC" ]]
 then
