@@ -47,10 +47,17 @@ exe "Cloning devops-CnC-ansible into ~/ansible/" \
             git clone https://github.com/arachnafobic/devops-CnC-ansible.git ansible && \
             chown -R vagrant:vagrant ansible/'
 
-exe "Setting Keybased SSH for vm-clinux" \
-     sh -c 'mv shared/vm-clinux.id_rsa /home/vagrant/.ssh/vm-clinux.id_rsa && \
-            chmod 600 /home/vagrant/.ssh/vm-clinux.id_rsa && \
-            chown vagrant:vagrant /home/vagrant/.ssh/vm-clinux.id_rsa'
+exe "Setting Keybased SSH for vm(s)" \
+     sh -c 'mv -f shared/vm-*.id_rsa /home/vagrant/.ssh/ && \
+            chmod 600 /home/vagrant/.ssh/vm-*.id_rsa && \
+            chown vagrant:vagrant /home/vagrant/.ssh/vm-*.id_rsa'
+
+diff shared/hosts ansible/inventories/hosts.vm/hosts 1>/dev/null 2>/dev/null
+if [[ ! $? ]]
+then
+  exe "Copying new generated hosts inventory file to ansible" \
+       sh -c 'cp -f shared/hosts ansible/inventories/hosts.vm/hosts'
+fi
 
 exe "Setting up git config" \
      sudo -H -u vagrant sh -c 'mkdir -p ~/.git/ && \
