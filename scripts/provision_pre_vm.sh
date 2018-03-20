@@ -28,11 +28,13 @@ exe () {
 DISTRO=`cat /etc/os-release | grep ^NAME= | awk -F'=' '{print $2}' | awk -F '"' '{print $2}'`
 VERSION=`cat /etc/os-release | grep ^VERSION_ID= | awk -F'=' '{print $2}' | awk -F '"' '{print $2}'`
 
-exe "Setting up swapfile" \
-     sh -c 'dd if=/dev/zero of=/swap bs=1024 count=2097152 && \
-            mkswap /swap && chown root. /swap && chmod 0600 /swap && swapon /swap && \
-            sh -c "echo /swap swap swap defaults 0 0 >> /etc/fstab" && \
-            sh -c "echo vm.swappiness = 0 >> /etc/sysctl.conf && sysctl -p"'
+if [ ! -e /swap ]; then
+  exe "Setting up swapfile" \
+       sh -c 'dd if=/dev/zero of=/swap bs=1024 count=2097152 && \
+              mkswap /swap && chown root. /swap && chmod 0600 /swap && swapon /swap && \
+              sh -c "echo /swap swap swap defaults 0 0 >> /etc/fstab" && \
+              sh -c "echo vm.swappiness = 0 >> /etc/sysctl.conf && sysctl -p"'
+fi
 
 # We use aptitude in precise (12.04) and trusty (14.04)
 # The apt toolset in xenial (16.04) is superior though
@@ -74,12 +76,14 @@ fi
 
 if [[ $1 == "CnC" ]]
 then
-  exe "Preparing ansible 2.4.x" \
-       sh -c 'mkdir -p /opt && \
-              cd /opt && \
-              git clone --recursive -b v2.4.3.0-1 https://github.com/ansible/ansible.git ansible-2.4.x && \
-              ln -s ansible-2.4.x ansible && \
-              chown -R vagrant.vagrant /opt/ansible/ && \
-              chown -R vagrant.vagrant /opt/ansible-2.4.x/ && \
-              echo "source /opt/ansible/hacking/env-setup 1>/dev/null 2>&1" >> /home/vagrant/.profile'
+  if [ ! -d /opt/ansible/ ]; then
+    exe "Preparing ansible 2.4.x" \
+         sh -c 'mkdir -p /opt && \
+                cd /opt && \
+                git clone --recursive -b v2.4.3.0-1 https://github.com/ansible/ansible.git ansible-2.4.x && \
+                ln -s ansible-2.4.x ansible && \
+                chown -R vagrant.vagrant /opt/ansible/ && \
+                chown -R vagrant.vagrant /opt/ansible-2.4.x/ && \
+                echo "source /opt/ansible/hacking/env-setup 1>/dev/null 2>&1" >> /home/vagrant/.profile'
+  fi
 fi

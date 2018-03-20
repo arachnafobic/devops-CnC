@@ -31,7 +31,7 @@ exe () {
 if [[ $1 == "CnC" ]]
 then
 
-  [ -e shared/hosts ] || rm -f shared/hosts; touch shared/hosts
+  [ ! -e shared/hosts ] || rm -f shared/hosts; touch shared/hosts
 
   find .vagrant/machines/ -name private_key |while read fname; do
     KEY=$fname
@@ -42,7 +42,7 @@ then
     if [[ $MACHINE != "CnC" ]]
     then
       [ ! -e $KEY ] || cp $KEY shared/$MACHINE.id_rsa
-      echo "$MACHINE\t\tansible_host=$MACHINE\tansible_port=22\tansible_user=vagrant\tansible_ssh_private_key_file=/home/vagrant/.ssh/$MACHINE.id_rsa" >> shared/hosts
+      echo -e "$MACHINE\t\tansible_host=$MACHINE\tansible_port=22\tansible_user=vagrant\tansible_ssh_private_key_file=/home/vagrant/.ssh/$MACHINE.id_rsa" >> shared/hosts
     fi
   done
 fi
