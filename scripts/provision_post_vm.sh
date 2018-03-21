@@ -63,6 +63,15 @@ then
                 chown vagrant:vagrant ansible/inventories/hosts.vm/hosts'
   fi
 
+  diff shared/groups ansible/inventories/hosts.vm/groups 1>/dev/null 2>/dev/null
+  if [[ $? -ne 0 ]]
+  then
+    exe "Copying new generated groups inventory file to ansible" \
+         sh -c 'cp -f shared/groups ansible/inventories/hosts.vm/groups && \
+                chmod 644 ansible/inventories/hosts.vm/groups && \
+                chown vagrant:vagrant ansible/inventories/hosts.vm/groups'
+  fi
+
   exe "Setting up git config" \
        sudo -H -u vagrant sh -c 'mkdir -p ~/.git/ && \
                                  git config --global push.default matching && \

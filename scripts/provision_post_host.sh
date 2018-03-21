@@ -32,6 +32,7 @@ if [[ $1 == "CnC" ]]
 then
 
   [ ! -e shared/hosts ] || rm -f shared/hosts; touch shared/hosts
+  [ ! -e shared/groups ] || rm -f shared/groups; cp -f files/hosts.vm.groups shared/groups
 
   find .vagrant/machines/ -name private_key |while read fname; do
     KEY=$fname
@@ -43,6 +44,7 @@ then
     then
       [ ! -e $KEY ] || cp $KEY shared/$MACHINE.id_rsa
       echo -e "$MACHINE\t\tansible_host=$MACHINE\tansible_port=22\tansible_user=vagrant\tansible_ssh_private_key_file=/home/vagrant/.ssh/$MACHINE.id_rsa" >> shared/hosts
+      sed -i '/${MACHINE}/s/^#//g' shared/groups
     fi
   done
 fi
