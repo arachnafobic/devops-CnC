@@ -83,8 +83,8 @@ then
   mkdir -p /home/vagrant/.log
 
   cd /home/vagrant/ansible
-  # exe "Running initialize-vm playbook on vm-ubuntu" \
-  #      bash -c 'ansible-playbook -v -i inventories/hosts.vm playbooks/initialize-vms.yml 1>/home/vagrant/.log/ansible-vm.vm 2>&1'
+  exe "Running initialize-vm playbook on vm-*" \
+       bash -c 'ansible-playbook -v -i inventories/hosts.vm playbooks/initialize-vms.yml 1>/home/vagrant/.log/ansible-vm.vm 2>&1'
 
   exe "Running initialize-vm playbook on CnC" \
        bash -c 'ansible-playbook -v -i inventories/hosts.devops-CnC playbooks/initialize-vms.yml 1>/home/vagrant/.log/ansible-vm.cnc 2>&1'
