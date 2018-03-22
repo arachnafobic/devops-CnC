@@ -72,6 +72,11 @@ then
                 chown vagrant:vagrant ansible/inventories/hosts.vm/groups'
   fi
 
+  exe "Copying testing *_secrets files to var folders" \
+       sh -c 'cp -f shared/*_secrets ansible/inventories/group_vars/. && \
+              chmod 600 ansible/inventories/group_vars/*_secrets && \
+              chown vagrant:vagrant ansible/inventories/group_vars/*_secrets'
+
   exe "Setting up git config" \
        sudo -H -u vagrant sh -c 'mkdir -p ~/.git/ && \
                                  git config --global push.default matching && \

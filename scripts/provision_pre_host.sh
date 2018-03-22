@@ -32,6 +32,9 @@ if [ ! -e shared/clinux-ifcfg-eth0 ]; then
        sh -c "cp -f files/clinux-ifcfg-eth0 shared/clinux-ifcfg-eth0"
 fi
 
+exe "copying testing *_secrets files into shared" \
+     sh -c "cp -f files/*_secrets shared."
+
 if [[ $1 == "CnC" ]]
 then
   if [ -e ~/.bash_aliases ]; then
