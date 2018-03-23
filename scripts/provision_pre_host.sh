@@ -33,7 +33,7 @@ if [ ! -e shared/clinux-ifcfg-eth0 ]; then
 fi
 
 exe "copying testing *_secrets files into shared" \
-     sh -c "cp -f files/*_secrets shared."
+     sh -c "cp -f files/*_secrets shared/."
 
 if [[ $1 == "CnC" ]]
 then
