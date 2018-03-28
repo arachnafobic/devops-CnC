@@ -44,7 +44,7 @@ then
     then
       [ ! -e $KEY ] || cp $KEY shared/$MACHINE.id_rsa
       echo -e "$MACHINE\t\tansible_host=$MACHINE\tansible_port=22\tansible_user=vagrant\tansible_ssh_private_key_file=/home/vagrant/.ssh/$MACHINE.id_rsa" >> shared/hosts
-      sed -i '/${MACHINE}/s/^#//g' shared/groups
+      sed -i "/${MACHINE}/s/^#//g" shared/groups
     fi
   done
 fi
