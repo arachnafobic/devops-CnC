@@ -32,6 +32,16 @@ base_cfg = {
 # ALWAYS place CnC LAST so it can execute playbooks against the other vm(s) during "vagrant up" creation.
 boxes = [
   {
+    name:       'vm-centos',
+    os:         'centos',
+    release:    'centos/7',
+    host:       'vm-centos.example.com',
+    sshport:    '2320',
+    memory:     '2048',
+    sshagent:   false,
+#    autostart:  false,
+  },
+  {
     name:       'vm-clinux',
     os:         'cloudlinux',
     release:    'cloudlinux/cloudlinux-7-x86_64',
@@ -39,6 +49,7 @@ boxes = [
     sshport:    '2220',
     memory:     '2048',
     sshagent:   false,
+    autostart:  false,
   },
   {
     name:       'vm-ubuntu',
@@ -64,10 +75,6 @@ Vagrant::Config.run('2') do |config|
     cfg   = base_cfg.merge box
     name  = ENV['CURRENT_BOX'] = cfg[:name]
 
-    # Turn virtualbox guestutil auto update/install off
-    # We'll handle it during provisioning
-    config.vbguest.auto_update = false
-
     # Configure, but DISable HostManager Plugin, we'll run it as provisioner
     config.hostmanager.enabled = false
     config.hostmanager.manage_host = false
@@ -77,12 +84,23 @@ Vagrant::Config.run('2') do |config|
 
     config.vm.define name, primary: cfg[:defaultvm], autostart: cfg[:autostart] do |config|
 
+      # Turn virtualbox guestutil auto update/install off
+      # We'll handle it during provisioning, except for centos,
+      # which doesn't come with any guestutils by default
+      config.vbguest.auto_update = false
+
       # Set Box
       if cfg[:os] == 'cloudlinux'
         boxname = "#{cfg[:release]}"
         config.vm.box = boxname
         config.vm.box_check_update = true
-        # config.vm.hostname = cfg[:host]
+        config.vm.hostname = cfg[:host]
+        config.vm.base_mac = ''
+      elsif cfg[:os] == 'centos'
+        boxname = "#{cfg[:release]}"
+        config.vm.box = boxname
+        config.vm.box_check_update = true
+        config.vm.hostname = cfg[:host]
         config.vm.base_mac = ''
       else
         # ubuntu = default
@@ -127,9 +145,21 @@ Vagrant::Config.run('2') do |config|
       end
 
       # Mount shares (create when missing)
-      config.vm.synced_folder '.', '/vagrant', disabled: true
-      cfg[:shares].each do |k,v|
-        config.vm.synced_folder k, v, create: true
+      # for centos, don't define these until after vbguest did its thing
+      # requires a vagrant reload for the shares to work after vagrant up
+      # sadly provisioning reloads don't trigger this
+      if cfg[:os] == 'centos'
+        config.vm.synced_folder '.', '/vagrant', disabled: true
+        if File.exist?(".vagrant/machines/#{cfg[:name]}/virtualbox/action_provision")
+          cfg[:shares].each do |k,v|
+            config.vm.synced_folder k, v, create: true
+          end
+        end
+      else
+        config.vm.synced_folder '.', '/vagrant', disabled: true
+        cfg[:shares].each do |k,v|
+          config.vm.synced_folder k, v, create: true
+        end
       end
 
       # Update /etc/hosts inside VMs
@@ -141,6 +171,13 @@ Vagrant::Config.run('2') do |config|
               vm.communicate.execute("/sbin/ifconfig | grep 'inet' | head -n 1 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
                 cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
               end
+            elsif cfg[:os] == 'centos'
+              result = ""
+              vm.communicate.execute("ip addr | grep 'dynamic eth1'") do |type, data|
+                result << data if type == :stdout
+              end
+              (ip = /inet (\d+\.\d+\.\d+\.\d+)/.match(result)) && ip[1]
+              cached_addresses[vm.name] = ip[1]
             else
               vm.communicate.execute("/sbin/ifconfig | grep 'inet addr' | head -n 2 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
                 cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
@@ -167,8 +204,8 @@ Vagrant::Config.run('2') do |config|
 
       config.vm.provision "trigger", :stdout => true do |trigger|
         trigger.fire do
-          run "scripts/provision_post_host.sh #{cfg[:name]}"
-          run_remote "scripts/provision_post_vm.sh #{cfg[:name]}"
+#          run "scripts/provision_post_host.sh #{cfg[:name]}"
+#          run_remote "scripts/provision_post_vm.sh #{cfg[:name]}"
           run "scripts/provision_vbguest.sh #{cfg[:name]}"
         end
       end
