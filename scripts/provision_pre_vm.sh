@@ -70,6 +70,13 @@ then
   # vagrant/box specific workaround
   exe "Fixing ifcfg-eth0" \
        sh -c 'cp -f /home/vagrant/shared/clinux-ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0'
+
+  grep "proxy" /etc/yum.conf
+  if [[ $? -ne 0 ]]
+  then
+    exe "Set yum proxy to 172.28.128.1:3128" \
+         sh -c 'echo "proxy=http://172.28.128.1:3128" >> /etc/yum.conf'
+  fi
 else
   echo "Unknown distro/version combo detected, skipping auto update"
 fi
