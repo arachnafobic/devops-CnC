@@ -58,14 +58,14 @@ boxes = [
     sshport:    '2120',
     memory:     '2048',
     sshagent:   false,
-    autostart:  false,
+#    autostart:  false,
   },
   {
     name:       'CnC',
     release:    'xenial',
     host:       'CnC.example.com',
     sshport:    '2020',
-    memory:     '512',
+    memory:     '1024',
     defaultvm:  true,
   },
 ]
@@ -87,14 +87,19 @@ Vagrant::Config.run('2') do |config|
       # Turn virtualbox guestutil auto update/install off
       # We'll handle it during provisioning, except for centos,
       # which doesn't come with any guestutils by default
-      config.vbguest.auto_update = false
+      if cfg[:os] == 'centos'
+        config.vbguest.auto_update = true
+      else
+        config.vbguest.auto_update = false
+      end
 
       # Set Box
       if cfg[:os] == 'cloudlinux'
         boxname = "#{cfg[:release]}"
         config.vm.box = boxname
         config.vm.box_check_update = true
-        config.vm.hostname = cfg[:host]
+        # setting hostname causes hang during vagrant up ??
+        # config.vm.hostname = cfg[:host]
         config.vm.base_mac = ''
       elsif cfg[:os] == 'centos'
         boxname = "#{cfg[:release]}"
@@ -123,6 +128,8 @@ Vagrant::Config.run('2') do |config|
         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
         vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
         vb.customize ["modifyvm", :id, "--nictype1", "virtio"]        
+        vb.customize ["modifyvm", :id, "--uart1", "0x3F8", "4" ]
+        vb.customize ["modifyvm", :id, "--uartmode1", "file", File.join(Dir.pwd, "logs/console-#{cfg[:os]}-#{cfg[:name]}.log") ]
         if cfg[:os] == 'ubuntu'
           vb.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/home_vagrant_shared", "1"]
         end
@@ -145,21 +152,9 @@ Vagrant::Config.run('2') do |config|
       end
 
       # Mount shares (create when missing)
-      # for centos, don't define these until after vbguest did its thing
-      # requires a vagrant reload for the shares to work after vagrant up
-      # sadly provisioning reloads don't trigger this
-      if cfg[:os] == 'centos'
-        config.vm.synced_folder '.', '/vagrant', disabled: true
-        if File.exist?(".vagrant/machines/#{cfg[:name]}/virtualbox/action_provision")
-          cfg[:shares].each do |k,v|
-            config.vm.synced_folder k, v, create: true
-          end
-        end
-      else
-        config.vm.synced_folder '.', '/vagrant', disabled: true
-        cfg[:shares].each do |k,v|
-          config.vm.synced_folder k, v, create: true
-        end
+      config.vm.synced_folder '.', '/vagrant', disabled: true
+      cfg[:shares].each do |k,v|
+        config.vm.synced_folder k, v, create: true
       end
 
       # Update /etc/hosts inside VMs
@@ -168,7 +163,7 @@ Vagrant::Config.run('2') do |config|
         if cached_addresses[vm.name].nil?
           if hostname = (vm.ssh_info && vm.ssh_info[:host])
             if cfg[:os] == 'cloudlinux'
-              vm.communicate.execute("/sbin/ifconfig | grep 'inet' | head -n 1 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
+              vm.communicate.execute("/sbin/ifconfig | grep 'inet' | egrep -o '172.[0-9\.]+' | head -n 1 2>&1") do |type, contents|
                 cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
               end
             elsif cfg[:os] == 'centos'
@@ -204,9 +199,11 @@ Vagrant::Config.run('2') do |config|
 
       config.vm.provision "trigger", :stdout => true do |trigger|
         trigger.fire do
-#          run "scripts/provision_post_host.sh #{cfg[:name]}"
-#          run_remote "scripts/provision_post_vm.sh #{cfg[:name]}"
-          run "scripts/provision_vbguest.sh #{cfg[:name]}"
+          run "scripts/provision_post_host.sh #{cfg[:name]}"
+          run_remote "scripts/provision_post_vm.sh #{cfg[:name]}"
+          if cfg[:os] != 'centos' && cfg[:os] != 'cloudlinux'
+            run "scripts/provision_vbguest.sh #{cfg[:name]}"
+          end
         end
       end
 

@@ -36,7 +36,7 @@ if [ ! -e /swap ]; then
               sh -c "echo vm.swappiness = 0 >> /etc/sysctl.conf && sysctl -p"'
 fi
 
-if [ $DISTRO == "CloudLinux" ]
+if [[ $DISTRO == "CloudLinux" ]]
 then
   # vagrant/box specific workaround
   exe "Fixing ifcfg-eth0" \
@@ -45,7 +45,7 @@ fi
 
 # We use aptitude in precise (12.04) and trusty (14.04)
 # The apt toolset in xenial (16.04) is superior though
-if [ $DISTRO == "Ubuntu" ] && ( [ $VERSION == "12.04" ] || [ $VERSION == "14.04" ])
+if [[ $DISTRO == "Ubuntu" ]] && ( [[ $VERSION == "12.04" ]] || [[ $VERSION == "14.04" ]])
 then
   exe "Adding aptitude for 12.04/14.04" \
        sh -c 'apt-get update && \
@@ -58,7 +58,7 @@ then
               aptitude -y install git python-jinja2 python-setuptools whois && \
               aptitude -y safe-upgrade && \
               aptitude -y autoclean'
-elif [ $DISTRO == "Ubuntu" ] && ( [ $VERSION != "12.04" ] && [ $VERSION != "14.04" ])
+elif [[ $DISTRO == "Ubuntu" ]] && ( [[ $VERSION != "12.04" ]] && [[ $VERSION != "14.04" ]])
 then
   exe "Updating system" \
        sh -c 'export DEBIAN_FRONTEND=noninteractive && \
@@ -67,7 +67,7 @@ then
               apt -y install git python-jinja2 python-setuptools python-yaml whois && \
               apt -y --with-new-pkgs --autoremove upgrade && \
               apt -y autoclean'
-elif [ $DISTRO == "CloudLinux" ] || [ $DISTRO == "CentOS Linux" ]
+elif [[ $DISTRO == "CloudLinux" ]] || [[ $DISTRO == "CentOS Linux" ]]
 then
   grep "proxy" /etc/yum.conf
   if [[ $? -ne 0 ]]
@@ -77,7 +77,7 @@ then
   fi
 
   # update only works with valid license allready in place for cloudlinux
-  if [ $DISTRO == "CentOS Linux" ]
+  if [[ $DISTRO == "CentOS Linux" ]]
   then
     exe "Updating system" \
          sh -c 'yum -q -y update'

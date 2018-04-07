@@ -32,6 +32,10 @@ if [ ! -e shared/clinux-ifcfg-eth0 ]; then
        sh -c "cp -f files/clinux-ifcfg-eth0 shared/clinux-ifcfg-eth0"
 fi
 
+if [ ! -e files/dummy_secrets ]; then
+  touch files/dummy_secrets
+fi
+
 exe "copying testing *_secrets files into shared" \
      sh -c "cp -f files/*_secrets shared/."
 

@@ -9,3 +9,4 @@ ubuntu-*-cloudimg-console.log
 /.vagrant
 /shared
 files/*_secrets
+logs/console-*
