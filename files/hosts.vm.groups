@@ -1,9 +1,12 @@
 [ruby]
 #vm-ubuntu
 #vm-clinux
+#vm-centos
 
 [python]
 #vm-ubuntu
+#vm-clinux
+#vm-centos
 
 [dotnet]
 #vm-ubuntu
