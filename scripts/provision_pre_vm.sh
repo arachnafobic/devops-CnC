@@ -90,13 +90,13 @@ fi
 if [[ $1 == "CnC" ]]
 then
   if [ ! -d /opt/ansible/ ]; then
-    exe "Preparing ansible 2.4.x" \
+    exe "Preparing ansible 2.5.x" \
          sh -c 'mkdir -p /opt && \
                 cd /opt && \
-                git clone --recursive -b v2.4.3.0-1 https://github.com/ansible/ansible.git ansible-2.4.x && \
-                ln -s ansible-2.4.x ansible && \
+                git clone --recursive -b v2.5.1 https://github.com/ansible/ansible.git ansible-2.5.x && \
+                ln -s ansible-2.5.x ansible && \
                 chown -R vagrant.vagrant /opt/ansible/ && \
-                chown -R vagrant.vagrant /opt/ansible-2.4.x/ && \
+                chown -R vagrant.vagrant /opt/ansible-2.5.x/ && \
                 echo "source /opt/ansible/hacking/env-setup 1>/dev/null 2>&1" >> /home/vagrant/.profile'
   fi
 fi
