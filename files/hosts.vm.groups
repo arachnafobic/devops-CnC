@@ -1,3 +1,8 @@
+[monitor]
+#vm-ubuntu
+
+[hosting]
+
 [ruby]
 #vm-ubuntu
 #vm-clinux
@@ -14,19 +19,32 @@
 [nodejs]
 #vm-ubuntu
 
+[erlang]
+
+[erlang:children]
+monitor
+
 [libraries:children]
 ruby
 python
 dotnet
 nodejs
 
-[hosting]
-#vm-ubuntu
+[redis]
+
+[redis:children]
+monitor
+
+[rabbitmq]
+
+[rabbitmq:children]
+monitor
 
 [nginx]
 
 [nginx:children]
 hosting
+monitor
 
 [mariadb]
 
