@@ -3,7 +3,7 @@
 exe () {
     # MESSAGE_PREFIX="\b\b\b\b\b\b\b\b\b\b"
     MESSAGE_PREFIX=""
-    echo -e "$MESSAGE_PREFIX Execute: $1"
+    echo -e "$MESSAGE_PREFIX    $VM:  Execute: $1"
     LOOP=0
     while true;
     do
@@ -16,13 +16,15 @@ exe () {
 
     if [ $status -ne 0 ];
     then
-        echo -e "$MESSAGE_PREFIX ✖ Error" >&2
+        echo -e "$MESSAGE_PREFIX    $VM:  ✖ Error" >&2
         echo -e "$ERROR" >&2
     else
-        echo -e "$MESSAGE_PREFIX ✔ Success"
+        echo -e "$MESSAGE_PREFIX    $VM:  ✔ Success"
     fi
     return $status
 }
+
+VM=$1
 
 exe "running vbguest" \
      vagrant vbguest $1 -b --force

@@ -1,10 +1,34 @@
-required_plugins = %w(vagrant-vbguest vagrant-vbox-snapshot vagrant-triggers tamtam-vagrant-reload vagrant-hostmanager)
+required_plugins = %w(vagrant-vbguest vagrant-vbox-snapshot tamtam-vagrant-reload vagrant-hostmanager)
 
 plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
 if not plugins_to_install.empty?
   puts "Installing plugins: #{plugins_to_install.join(' ')}"
   system "vagrant plugin install #{plugins_to_install.join(' ')}"
   exec "vagrant #{ARGV.join(' ')}"
+end
+
+module LocalCommand
+    class Config < Vagrant.plugin("2", :config)
+        attr_accessor :command
+    end
+
+    class Plugin < Vagrant.plugin("2")
+        name "local_shell"
+
+        config(:local_shell, :provisioner) do
+            Config
+        end
+
+        provisioner(:local_shell) do
+            Provisioner
+        end
+    end
+
+    class Provisioner < Vagrant.plugin("2", :provisioner)
+        def provision
+            result = system "#{config.command}"
+        end
+    end
 end
 
 base_cfg = {
@@ -39,7 +63,7 @@ boxes = [
     sshport:    '2320',
     memory:     '2048',
     sshagent:   false,
-#    autostart:  false,
+    autostart:  false,
   },
   {
     name:       'vm-clinux',
@@ -58,7 +82,7 @@ boxes = [
     sshport:    '2120',
     memory:     '2048',
     sshagent:   false,
-#    autostart:  false,
+    autostart:  false,
   },
   {
     name:       'CnC',
@@ -185,29 +209,23 @@ Vagrant::Config.run('2') do |config|
       config.hostmanager.aliases = cfg[:name]
 
       # Provisions, pre reboot
-      config.vm.provision "trigger", :stdout => true do |trigger|
-        trigger.fire do
-          run "scripts/provision_pre_host.sh #{cfg[:name]}"
-          run_remote "scripts/provision_pre_vm.sh #{cfg[:name]}"
-        end
-      end
+      config.vm.provision :local_shell, command: "scripts/provision_pre_host.sh #{cfg[:name]}"
+      config.vm.provision :shell, path: "scripts/provision_pre_vm.sh", args: "#{cfg[:name]}"
 
       # Auto Reboot after Provisions only, first run usually.
       config.vm.provision :reload
 
+      # Always update the /etc/hosts on the VMs between reloads and on up/create
       config.vm.provision :hostmanager, run: "always"
 
-      config.vm.provision "trigger", :stdout => true do |trigger|
-        trigger.fire do
-          run "scripts/provision_post_host.sh #{cfg[:name]}"
-          run_remote "scripts/provision_post_vm.sh #{cfg[:name]}"
-          if cfg[:os] != 'centos' && cfg[:os] != 'cloudlinux'
-            run "scripts/provision_vbguest.sh #{cfg[:name]}"
-          end
-        end
+      # Provisions, more of them, post reboot
+      config.vm.provision :local_shell, command: "scripts/provision_post_host.sh #{cfg[:name]}"
+      config.vm.provision :shell, path: "scripts/provision_post_vm.sh", args: "#{cfg[:name]}"
+      if cfg[:os] != 'centos' && cfg[:os] != 'cloudlinux'
+        config.vm.provision :local_shell, command: "scripts/provision_vbguest.sh #{cfg[:name]}"
       end
 
-      # Auto Reboot after Provisions only, first run usually.
+      # Auto Reboot after all Provisions have run.
       config.vm.provision :reload
 
     end
