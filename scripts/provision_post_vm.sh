@@ -99,6 +99,11 @@ then
   exe "Running ansible setup playbook on CnC" \
        bash -c 'ansible-playbook -v -i inventories/hosts.devops-CnC playbooks/setup-cnc.yml 1>/home/vagrant/.log/ansible.cnc 2>&1'
 
+  cd /home/vagrant/ansible/roles/sensu/files/ssl
+  exe "Generating sensu ssl certs" \
+       bash -c './ssl_certs.sh generate 1>/home/vagrant/.log/ssl-certs.cnc 2>&1'
+
+  chown -R vagrant:vagrant /home/vagrant/ansible/roles/sensu/files/ssl/
   chown -R vagrant:vagrant /opt/ansible/
   chown -R vagrant:vagrant /home/vagrant/.log
 fi
