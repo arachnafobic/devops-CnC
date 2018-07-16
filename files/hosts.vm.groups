@@ -41,6 +41,10 @@ nodejs
 [redis:children]
 monitor
 
+[memcached]
+
+[memcached:children]
+
 [rabbitmq]
 
 [rabbitmq:children]
@@ -61,3 +65,8 @@ hosting
 
 [phpfpm:children]
 hosting
+
+[phpmyadmin]
+
+[phpadmin:children]
+
