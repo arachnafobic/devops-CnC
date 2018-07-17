@@ -1,11 +1,13 @@
 [monitor]
-#vm-ubuntu
 
 [hosting]
+#vm-ubuntu
+#vm-bionic
+#vm-centos
 
 [ruby]
 #vm-ubuntu
-#vm-clinux
+#vm-bionic
 #vm-centos
 
 [ruby:children]
@@ -13,14 +15,12 @@ monitor
 
 [python]
 #vm-ubuntu
-#vm-clinux
+#vm-bionic
 #vm-centos
 
 [dotnet]
-#vm-ubuntu
 
 [nodejs]
-#vm-ubuntu
 
 [nodejs:children]
 monitor
@@ -37,11 +37,17 @@ dotnet
 nodejs
 
 [redis]
+#vm-ubuntu
+#vm-bionic
+#vm-centos
 
 [redis:children]
 monitor
 
 [memcached]
+#vm-ubuntu
+#vm-bionic
+#vm-centos
 
 [memcached:children]
 
@@ -67,6 +73,9 @@ hosting
 hosting
 
 [phpmyadmin]
+#vm-ubuntu
+#vm-bionic
+#vm-centos
 
 [phpadmin:children]
 

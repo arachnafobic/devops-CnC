@@ -226,6 +226,7 @@ Vagrant::Config.run('2') do |config|
       # Provisions, pre reboot
       config.vm.provision :local_shell, command: "scripts/provision_pre_host.sh #{cfg[:name]}"
       config.vm.provision :shell, path: "scripts/provision_pre_vm.sh", args: "#{cfg[:name]}"
+      config.vm.provision :shell, path: "scripts/bionic-fix.sh", args: "#{cfg[:name]}", run: "always"
 
       # Auto Reboot after Provisions only, first run usually.
       config.vm.provision :reload
