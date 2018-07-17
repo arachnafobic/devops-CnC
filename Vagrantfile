@@ -85,6 +85,15 @@ boxes = [
     autostart:  false,
   },
   {
+    name:       'vm-bionic',
+    release:    'bionic',
+    host:       'vm-bionic.example.com',
+    sshport:    '2420',
+    memory:     '2048',
+    sshagent:   false,
+    autostart:  false,
+  },
+  {
     name:       'CnC',
     release:    'xenial',
     host:       'CnC.example.com',
