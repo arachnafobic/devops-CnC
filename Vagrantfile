@@ -207,8 +207,14 @@ Vagrant::Config.run('2') do |config|
               (ip = /inet (\d+\.\d+\.\d+\.\d+)/.match(result)) && ip[1]
               cached_addresses[vm.name] = ip[1]
             else
-              vm.communicate.execute("/sbin/ifconfig | grep 'inet addr' | head -n 2 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
-                cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
+              if cfg[:release] == 'bionic'
+                vm.communicate.execute("/sbin/ifconfig | grep 'inet ' | head -n 2 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
+                  cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
+                end
+              else
+                vm.communicate.execute("/sbin/ifconfig | grep 'inet addr' | head -n 2 | tail -n 1 | egrep -o '[0-9\.]+' | head -n 1 2>&1") do |type, contents|
+                  cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
+                end
               end
             end
           end
