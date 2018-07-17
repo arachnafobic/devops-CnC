@@ -69,12 +69,12 @@ then
               apt -y autoclean'
 elif [[ $DISTRO == "CloudLinux" ]] || [[ $DISTRO == "CentOS Linux" ]]
 then
-  grep "proxy" /etc/yum.conf
-  if [[ $? -ne 0 ]]
-  then
-    exe "Set yum proxy to 172.28.128.1:3128" \
-         sh -c 'echo "proxy=http://172.28.128.1:3128" >> /etc/yum.conf'
-  fi
+#  grep "proxy" /etc/yum.conf
+#  if [[ $? -ne 0 ]]
+#  then
+#    exe "Set yum proxy to 172.28.128.1:3128" \
+#         sh -c 'echo "proxy=http://172.28.128.1:3128" >> /etc/yum.conf'
+#  fi
 
   # update only works with valid license allready in place for cloudlinux
   if [[ $DISTRO == "CentOS Linux" ]]
