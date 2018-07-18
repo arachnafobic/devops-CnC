@@ -45,6 +45,11 @@ fi
 
 # We use aptitude in precise (12.04) and trusty (14.04)
 # The apt toolset in xenial (16.04) is superior though
+if [[ $DISTRO == "Ubuntu" ]] && [[ $VERSION == "18.04" ]]
+then
+  echo "nameserver 8.8.8.8" > /etc/resolv.conf
+  echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+fi
 if [[ $DISTRO == "Ubuntu" ]] && ( [[ $VERSION == "12.04" ]] || [[ $VERSION == "14.04" ]])
 then
   exe "Adding aptitude for 12.04/14.04" \

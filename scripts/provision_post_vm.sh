@@ -39,6 +39,8 @@ then
               /usr/bin/ssh-keyscan -t rsa vm-centos.example.com   >> /root/.ssh/known_hosts && \
               /usr/bin/ssh-keyscan -t rsa vm-ubuntu               >> /root/.ssh/known_hosts && \
               /usr/bin/ssh-keyscan -t rsa vm-ubuntu.example.com   >> /root/.ssh/known_hosts && \
+              /usr/bin/ssh-keyscan -t rsa vm-bionic               >> /root/.ssh/known_hosts && \
+              /usr/bin/ssh-keyscan -t rsa vm-bionic.example.com   >> /root/.ssh/known_hosts && \
               mkdir -p /home/vagrant/.ssh && \
               chmod 700 /home/vagrant/.ssh && \
               cp /root/.ssh/known_hosts /home/vagrant/.ssh/known_hosts && \
@@ -100,8 +102,10 @@ then
        bash -c 'ansible-playbook -v -i inventories/hosts.devops-CnC playbooks/setup-cnc.yml 1>/home/vagrant/.log/ansible.cnc 2>&1'
 
   cd /home/vagrant/ansible/roles/sensu/files/ssl
-  exe "Generating sensu ssl certs" \
-       bash -c './ssl_certs.sh generate 1>/home/vagrant/.log/ssl-certs.cnc 2>&1'
+  if [ ! -d /home/vagrant/ansible/roles/sensu/files/ssl/server/ ]; then
+    exe "Generating sensu ssl certs" \
+         bash -c './ssl_certs.sh generate 1>/home/vagrant/.log/ssl-certs.cnc 2>&1'
+  fi
 
   chown -R vagrant:vagrant /home/vagrant/ansible/roles/sensu/files/ssl/
   chown -R vagrant:vagrant /opt/ansible/
