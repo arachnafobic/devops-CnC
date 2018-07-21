@@ -1,12 +1,12 @@
 [monitor]
 
 [hosting]
-#vm-ubuntu
+#vm-xenial
 #vm-bionic
 #vm-centos
 
 [ruby]
-#vm-ubuntu
+#vm-xenial
 #vm-bionic
 #vm-centos
 
@@ -14,7 +14,7 @@
 monitor
 
 [python]
-#vm-ubuntu
+#vm-xenial
 #vm-bionic
 #vm-centos
 
@@ -37,7 +37,7 @@ dotnet
 nodejs
 
 [redis]
-#vm-ubuntu
+#vm-xenial
 #vm-bionic
 #vm-centos
 
@@ -45,7 +45,7 @@ nodejs
 monitor
 
 [memcached]
-#vm-ubuntu
+#vm-xenial
 #vm-bionic
 #vm-centos
 
@@ -73,7 +73,7 @@ hosting
 hosting
 
 [phpmyadmin]
-#vm-ubuntu
+#vm-xenial
 #vm-bionic
 #vm-centos
 

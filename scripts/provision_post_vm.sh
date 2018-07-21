@@ -37,8 +37,8 @@ then
               /usr/bin/ssh-keyscan -t rsa vm-clinux.example.com   >> /root/.ssh/known_hosts && \
               /usr/bin/ssh-keyscan -t rsa vm-centos               >> /root/.ssh/known_hosts && \
               /usr/bin/ssh-keyscan -t rsa vm-centos.example.com   >> /root/.ssh/known_hosts && \
-              /usr/bin/ssh-keyscan -t rsa vm-ubuntu               >> /root/.ssh/known_hosts && \
-              /usr/bin/ssh-keyscan -t rsa vm-ubuntu.example.com   >> /root/.ssh/known_hosts && \
+              /usr/bin/ssh-keyscan -t rsa vm-xenial               >> /root/.ssh/known_hosts && \
+              /usr/bin/ssh-keyscan -t rsa vm-xenial.example.com   >> /root/.ssh/known_hosts && \
               /usr/bin/ssh-keyscan -t rsa vm-bionic               >> /root/.ssh/known_hosts && \
               /usr/bin/ssh-keyscan -t rsa vm-bionic.example.com   >> /root/.ssh/known_hosts && \
               mkdir -p /home/vagrant/.ssh && \

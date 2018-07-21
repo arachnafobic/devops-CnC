@@ -32,10 +32,10 @@ module LocalCommand
 end
 
 base_cfg = {
-  name:       'vm-ubuntu',
+  name:       'vm-xenial',
   os:         'ubuntu',
   release:    'xenial',
-  host:       'vm-ubuntu.example.com',
+  host:       'vm-xenial.example.com',
   ip:         'dhcp',
   sshport:    '2000',
   memory:     '2048',
@@ -76,9 +76,9 @@ boxes = [
     autostart:  false,
   },
   {
-    name:       'vm-ubuntu',
+    name:       'vm-xenial',
     release:    'xenial',
-    host:       'vm-ubuntu.example.com',
+    host:       'vm-xenial.example.com',
     sshport:    '2120',
     memory:     '2048',
     sshagent:   false,
