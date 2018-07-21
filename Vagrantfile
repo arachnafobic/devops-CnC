@@ -60,6 +60,7 @@ boxes = [
     os:         'centos',
     release:    'centos/7',
     host:       'vm-centos.example.com',
+    ip:         '172.28.128.4',
     sshport:    '2320',
     memory:     '2048',
     sshagent:   false,
@@ -70,6 +71,7 @@ boxes = [
     os:         'cloudlinux',
     release:    'cloudlinux/cloudlinux-7-x86_64',
     host:       'vm-clinux.example.com',
+    ip:         '172.28.128.5',
     sshport:    '2220',
     memory:     '2048',
     sshagent:   false,
@@ -79,6 +81,7 @@ boxes = [
     name:       'vm-xenial',
     release:    'xenial',
     host:       'vm-xenial.example.com',
+    ip:         '172.28.128.6',
     sshport:    '2120',
     memory:     '2048',
     sshagent:   false,
@@ -88,6 +91,7 @@ boxes = [
     name:       'vm-bionic',
     release:    'bionic',
     host:       'vm-bionic.example.com',
+    ip:         '172.28.128.7',
     sshport:    '2420',
     memory:     '2048',
     sshagent:   false,
@@ -97,6 +101,7 @@ boxes = [
     name:       'CnC',
     release:    'xenial',
     host:       'CnC.example.com',
+    ip:         '172.28.128.3',
     sshport:    '2020',
     memory:     '1024',
     defaultvm:  true,
@@ -201,7 +206,7 @@ Vagrant::Config.run('2') do |config|
               end
             elsif cfg[:os] == 'centos'
               result = ""
-              vm.communicate.execute("ip addr | grep 'dynamic eth1'") do |type, data|
+              vm.communicate.execute("ip addr | grep 'eth1'") do |type, data|
                 result << data if type == :stdout
               end
               (ip = /inet (\d+\.\d+\.\d+\.\d+)/.match(result)) && ip[1]
