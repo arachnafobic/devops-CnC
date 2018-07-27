@@ -51,6 +51,27 @@ then
          sh -c 'cd /home/vagrant && \
                 git clone https://github.com/arachnafobic/devops-CnC-ansible.git ansible && \
                 chown -R vagrant:vagrant ansible/'
+  else
+    exe "Updating devops-CnC-ansible with git pull" \
+         sh -c 'cd /home/vagrant/ansible && \
+                git pull && \
+                chown -R vagrant:vagrant /home/vagrant/ansible/'
+  fi
+
+  if [ -d /home/vagrant/shared/secrets/ ]; then
+    if [ ! -d /home/vagrant/ansible/secrets/ ]; then
+      exe "Processing secrets-repo setup" \
+           sh -c 'cd /home/vagrant/ansible && \
+                  cat /home/vagrant/shared/secrets/ssh_config >> /home/vagrant/.ssh/config && \
+                  cat /home/vagrant/shared/secrets/ssh_config >> /root/.ssh/config && \
+                  git clone `cat /home/vagrant/ansible/secrets/repo.txt` secrets && \
+                  chown -R vagrant:vagrant /home/vagrant/.ssh/ /home/vagrant/ansible/secrets/'
+    else
+      exe "Updating secrets with git pull" \
+           sh -c 'cd /home/vagrant/ansible/secrets && \
+                  git pull && \
+                  chown -R vagrant:vagrant /home/vagrant/ansible/secrets/'
+    fi
   fi
 
   exe "Setting Keybased SSH for vm(s)" \
