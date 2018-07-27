@@ -60,7 +60,7 @@ then
        sh -c 'export DEBIAN_FRONTEND=noninteractive && \
               aptitude update && \
               aptitude -y install squid-deb-proxy-client && \
-              aptitude -y install git python-jinja2 python-setuptools whois && \
+              aptitude -y install git python-jinja2 python-setuptools whois sshpass && \
               aptitude -y safe-upgrade && \
               aptitude -y autoclean'
 elif [[ $DISTRO == "Ubuntu" ]] && ( [[ $VERSION != "12.04" ]] && [[ $VERSION != "14.04" ]])
@@ -69,7 +69,7 @@ then
        sh -c 'export DEBIAN_FRONTEND=noninteractive && \
               apt update && \
               apt -y install squid-deb-proxy-client && \
-              apt -y install git python-jinja2 python-setuptools python-yaml whois && \
+              apt -y install git python-jinja2 python-setuptools python-yaml whois sshpass && \
               apt -y --with-new-pkgs --autoremove upgrade && \
               apt -y autoclean'
 elif [[ $DISTRO == "CloudLinux" ]] || [[ $DISTRO == "CentOS Linux" ]]
