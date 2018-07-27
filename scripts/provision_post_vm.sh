@@ -41,6 +41,9 @@ then
               /usr/bin/ssh-keyscan -t rsa vm-xenial.example.com   >> /root/.ssh/known_hosts && \
               /usr/bin/ssh-keyscan -t rsa vm-bionic               >> /root/.ssh/known_hosts && \
               /usr/bin/ssh-keyscan -t rsa vm-bionic.example.com   >> /root/.ssh/known_hosts && \
+              /usr/bin/ssh-keyscan -t rsa gitlab.com              >> /root/.ssh/known_hosts && \
+              /usr/bin/ssh-keyscan -t rsa 52.167.219.168          >> /root/.ssh/known_hosts && \
+              /usr/bin/ssh-keyscan -t rsa github.com              >> /root/.ssh/known_hosts && \
               mkdir -p /home/vagrant/.ssh && \
               chmod 700 /home/vagrant/.ssh && \
               cp /root/.ssh/known_hosts /home/vagrant/.ssh/known_hosts && \
@@ -61,16 +64,21 @@ then
   if [ -d /home/vagrant/shared/secrets/ ]; then
     if [ ! -d /home/vagrant/ansible/secrets/ ]; then
       exe "Processing secrets-repo setup" \
-           sh -c 'cd /home/vagrant/ansible && \
-                  cat /home/vagrant/shared/secrets/ssh_config >> /home/vagrant/.ssh/config && \
-                  cat /home/vagrant/shared/secrets/ssh_config >> /root/.ssh/config && \
-                  git clone `cat /home/vagrant/ansible/secrets/repo.txt` secrets && \
-                  chown -R vagrant:vagrant /home/vagrant/.ssh/ /home/vagrant/ansible/secrets/'
+           bash -c 'cd /home/vagrant/ansible && \
+                    [[ `grep "gitlab" /home/vagrant/.ssh/config` ]] || cat /home/vagrant/shared/secrets/ssh_config >> /home/vagrant/.ssh/config && \
+                    [[ `grep "gitlab" /root/.ssh/config` ]] || cat /home/vagrant/shared/secrets/ssh_config >> /root/.ssh/config && \
+                    cp /home/vagrant/shared/secrets/key/* /home/vagrant/.ssh/ && \
+                    cp /home/vagrant/shared/secrets/key/* /root/.ssh/ && \
+                    git clone `cat /home/vagrant/shared/secrets/repo.txt` secrets && \
+                    cd /home/vagrant/ansible/secrets && \
+                    ./init.sh && \
+                    chown -R vagrant:vagrant /home/vagrant/'
     else
       exe "Updating secrets with git pull" \
            sh -c 'cd /home/vagrant/ansible/secrets && \
                   git pull && \
-                  chown -R vagrant:vagrant /home/vagrant/ansible/secrets/'
+                  ./init.sh && \
+                  chown -R vagrant:vagrant /home/vagrant/'
     fi
   fi
 
@@ -96,11 +104,6 @@ then
                 chmod 644 ansible/inventories/hosts.vm/groups && \
                 chown vagrant:vagrant ansible/inventories/hosts.vm/groups'
   fi
-
-  exe "Copying testing *_secrets files to var folders" \
-       sh -c 'cp -f shared/*_secrets ansible/inventories/group_vars/. && \
-              chmod 600 ansible/inventories/group_vars/*_secrets && \
-              chown vagrant:vagrant ansible/inventories/group_vars/*_secrets'
 
   exe "Setting up git config" \
        sudo -H -u vagrant sh -c 'mkdir -p ~/.git/ && \
