@@ -79,3 +79,7 @@ hosting
 
 [phpadmin:children]
 
+[nullmailer]
+
+[nullmailer:children]
+hosting
