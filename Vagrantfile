@@ -67,17 +67,6 @@ boxes = [
     autostart:  false,
   },
   {
-    name:       'vm-clinux',
-    os:         'cloudlinux',
-    release:    'cloudlinux/cloudlinux-7-x86_64',
-    host:       'vm-clinux.example.com',
-    ip:         '172.28.128.5',
-    sshport:    '2220',
-    memory:     '2048',
-    sshagent:   false,
-    autostart:  false,
-  },
-  {
     name:       'vm-xenial',
     release:    'xenial',
     host:       'vm-xenial.example.com',
@@ -132,14 +121,7 @@ Vagrant::Config.run('2') do |config|
       end
 
       # Set Box
-      if cfg[:os] == 'cloudlinux'
-        boxname = "#{cfg[:release]}"
-        config.vm.box = boxname
-        config.vm.box_check_update = true
-        # setting hostname causes hang during vagrant up ??
-        # config.vm.hostname = cfg[:host]
-        config.vm.base_mac = ''
-      elsif cfg[:os] == 'centos'
+      if cfg[:os] == 'centos'
         boxname = "#{cfg[:release]}"
         config.vm.box = boxname
         config.vm.box_check_update = true
@@ -200,11 +182,7 @@ Vagrant::Config.run('2') do |config|
       config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
         if cached_addresses[vm.name].nil?
           if hostname = (vm.ssh_info && vm.ssh_info[:host])
-            if cfg[:os] == 'cloudlinux'
-              vm.communicate.execute("/sbin/ifconfig | grep 'inet' | egrep -o '172.[0-9\.]+' | head -n 1 2>&1") do |type, contents|
-                cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
-              end
-            elsif cfg[:os] == 'centos'
+            if cfg[:os] == 'centos'
               result = ""
               vm.communicate.execute("ip addr | grep 'eth1'") do |type, data|
                 result << data if type == :stdout
@@ -242,7 +220,7 @@ Vagrant::Config.run('2') do |config|
       # Provisions, more of them, post reboot
       config.vm.provision :local_shell, command: "scripts/provision_post_host.sh #{cfg[:name]}"
       config.vm.provision :shell, path: "scripts/provision_post_vm.sh", args: "#{cfg[:name]}"
-      if cfg[:os] != 'centos' && cfg[:os] != 'cloudlinux'
+      if cfg[:os] != 'centos'
         config.vm.provision :local_shell, command: "scripts/provision_vbguest.sh #{cfg[:name]}"
       end
 

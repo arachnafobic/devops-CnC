@@ -36,13 +36,6 @@ if [ ! -e /swap ]; then
               sh -c "echo vm.swappiness = 0 >> /etc/sysctl.conf && sysctl -p"'
 fi
 
-if [[ $DISTRO == "CloudLinux" ]]
-then
-  # vagrant/box specific workaround
-  exe "Fixing ifcfg-eth0" \
-       sh -c 'cp -f /home/vagrant/shared/clinux-ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0'
-fi
-
 # We use aptitude in precise (12.04) and trusty (14.04)
 # The apt toolset in xenial (16.04) is superior though
 if [[ $DISTRO == "Ubuntu" ]] && [[ $VERSION == "18.04" ]]
@@ -72,7 +65,7 @@ then
               apt -y install git python-jinja2 python-setuptools python-yaml whois sshpass && \
               apt -y --with-new-pkgs --autoremove upgrade && \
               apt -y autoclean'
-elif [[ $DISTRO == "CloudLinux" ]] || [[ $DISTRO == "CentOS Linux" ]]
+elif [[ $DISTRO == "CentOS Linux" ]]
 then
 #  grep "proxy" /etc/yum.conf
 #  if [[ $? -ne 0 ]]
@@ -81,13 +74,8 @@ then
 #         sh -c 'echo "proxy=http://172.28.128.1:3128" >> /etc/yum.conf'
 #  fi
 
-  # update only works with valid license allready in place for cloudlinux
-  if [[ $DISTRO == "CentOS Linux" ]]
-  then
-    exe "Updating system" \
-         sh -c 'yum -q -y update'
-  fi
-
+  exe "Updating system" \
+       sh -c 'yum -q -y update'
 else
   echo "Unknown distro/version combo detected, skipping auto update"
 fi
