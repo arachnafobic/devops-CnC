@@ -1,10 +1,12 @@
 required_plugins = %w(vagrant-vbguest vagrant-vbox-snapshot tamtam-vagrant-reload vagrant-hostmanager)
 
-plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
-if not plugins_to_install.empty?
-  puts "Installing plugins: #{plugins_to_install.join(' ')}"
-  system "vagrant plugin install #{plugins_to_install.join(' ')}"
-  exec "vagrant #{ARGV.join(' ')}"
+if Vagrant.plugins_enabled?
+  plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
+  if not plugins_to_install.empty?
+    puts "Installing plugins: #{plugins_to_install.join(' ')}"
+    system "vagrant plugin install #{plugins_to_install.join(' ')} --local"
+    exec "vagrant #{ARGV.join(' ')}"
+  end
 end
 
 module LocalCommand
@@ -88,8 +90,8 @@ boxes = [
   },
   {
     name:       'CnC',
-    release:    'xenial',
-    host:       'CnC.example.com',
+    release:    'bionic',
+    host:       'CnC-monitor.ictmaatwerk.com',
     ip:         '172.28.128.3',
     sshport:    '2020',
     memory:     '1024',
