@@ -30,8 +30,17 @@ VERSION=`cat /etc/os-release | grep ^VERSION_ID= | awk -F'=' '{print $2}' | awk 
 
 if [[ $DISTRO == "Ubuntu" ]] && [[ $VERSION == "18.04" ]]
 then
-  exe "Fixing boottime for Ubuntu Bionic" \
-       sh -c 'echo "            optional: yes" >> /etc/netplan/50-cloud-init.yaml && \
-              echo "      optional: yes" >> /etc/netplan/50-vagrant.yaml && \
-              netplan apply'
+  cat /etc/netplan/50-cloud-init.yaml | grep optional > /dev/null
+
+  if [ $? -ne 0 ];
+  then
+    exe "Fixing boottime for Ubuntu Bionic" \
+         sh -c 'echo "            optional: yes" >> /etc/netplan/50-cloud-init.yaml && \
+                echo "      optional: yes" >> /etc/netplan/50-vagrant.yaml && \
+                netplan apply'
+  else
+    exe "Fixing boottime for Ubuntu Bionic" \
+         sh -c 'echo "      optional: yes" >> /etc/netplan/50-vagrant.yaml && \
+                netplan apply'
+  fi
 fi
